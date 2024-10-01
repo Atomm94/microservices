@@ -1,0 +1,3 @@
+export enum TIMER {
+    EVERY_FIFTEEN_SECONDS = 15000,
+}
