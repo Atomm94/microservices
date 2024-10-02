@@ -14,6 +14,7 @@ const DeviceSchema = new Schema<IDevice>(
             enum: Object.values(DeviceStatus),
             default: DeviceStatus.Active
         },
+        lastPingTime: String,
     },
     {
         timestamps: true,

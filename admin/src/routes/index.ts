@@ -1,5 +1,7 @@
 import {admin} from "./admin";
+import {device} from "./device";
 
 export default {
-    adminRoutes: admin
+    adminRoutes: admin,
+    deviceRoutes: device,
 }

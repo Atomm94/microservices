@@ -1,41 +1,21 @@
 import { Request, Response, Router } from 'express';
 import rabbitService from '../messageBroker';
-import { DbRoutes as dbRoutes } from "../common/enums/dbRoutes";
+import rabbitRoutes from "../common/enums";
 
 const device = Router();
+const { deviceRoutes } = rabbitRoutes;
 
-device.get('/', async (req: Request, res: Response) => {
-    const results: any = await rabbitService.produce(dbRoutes.GET_ALL);
+device.put('/', async (req: Request, res: Response) => {
+    const data: any = ['66fd4b8c3af75991986f2d5b', '66fd4b8c3af75991986f2d5c', '66fd4b8c3af75991986f2d6e'];
 
-    return res.status(results.status).send(results);
-})
+    // for (let i = 0; i < 100000; i++) {
+    //     data.push({name: `device${Math.random() * 6}`, lastPingTime: new Date().toISOString()});
+    // }
 
-device.get('/:id', async (req: Request, res: Response) => {
-    const { params: { id } } = req;
-    const results: any = await rabbitService.produce(dbRoutes.GET_ONE, id);
-
-    return res.status(results.status).send(results);
-})
-
-device.post('/', async (req: Request, res: Response) => {
-    const { body } = req;
-    const results: any = await rabbitService.produce(dbRoutes.CREATE, body);
+    const results: any = await rabbitService.produce(deviceRoutes.UPDATE_MANY, data);
 
     return res.status(results.status).send(results);
 })
 
-device.put('/:id', async (req: Request, res: Response) => {
-    const { body, params: { id } } = req;
-    const results: any = await rabbitService.produce(dbRoutes.UPDATE, { id, ...body});
-
-    return res.status(results.status).send(results);
-})
-
-device.delete('/:id', async (req: Request, res: Response) => {
-    const { params: { id } } = req;
-    const results: any = await rabbitService.produce(dbRoutes.REMOVE, id);
-
-    return res.status(results.status).send(results);
-})
 
 export { device };

@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/admin', routes.adminRoutes);
+app.use('/device', routes.deviceRoutes);
 
 (async () => {
     await rabbitService.connect();

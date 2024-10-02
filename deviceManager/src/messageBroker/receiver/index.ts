@@ -1,7 +1,9 @@
 import {RBMQ_DB_QUEUE} from "../configs";
+import { CommonEnum as constants } from "../../common/enums/common";
 
 export const consume = async(channel, responseMap, replyQueue) => {
     const { queue } = await channel.assertQueue(replyQueue, { durable: true });
+    const { queue: dbQueue } = await channel.assertQueue(RBMQ_DB_QUEUE, { durable: true });
 
     return await channel.consume(queue, (msg: any) => {
         if (msg) {
@@ -16,13 +18,10 @@ export const consume = async(channel, responseMap, replyQueue) => {
 
             const { route } = data;
 
-            if (route === 'timeseries') {
-                console.log('dddddddddd')
-                channel.sendToQueue(
-                    RBMQ_DB_QUEUE,
+            if (route === constants.TIME_SERIES) {
+                channel.sendToQueue(dbQueue,
                     Buffer.from(JSON.stringify(data)),
-                    { correlationId: msg.properties.correlationId }
-                );
+                    { correlationId: correlationId });
             }
 
             channel.ack(msg);

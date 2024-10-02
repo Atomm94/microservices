@@ -5,11 +5,11 @@ import {logger} from "./timer";
 dotenv.config();
 
 const devices = [
-    { name: 'device1', status: 'active' },
-    { name: 'device2', status: 'active' },
-    { name: 'device3', status: 'active' },
-    { name: 'device4', status: 'active' },
-    { name: 'device5', status: 'active' },
+    { id: '66f3c36766e5c867510b5d16', name: 'device1'},
+    { id: '66f3c36766e5c867510b5d15', name: 'device2'},
+    { id: '66f3c36766e5c867510b5d11', name: 'device3'},
+    { id: '66f3c36766e5c867510b5d19', name: 'device4'},
+    { id: '66f3c36766e5c867510b5d14', name: 'device5'},
 ];
 
 (async () => {

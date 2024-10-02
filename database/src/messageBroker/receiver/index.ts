@@ -1,19 +1,25 @@
-import {adminServices} from "../../services";
+import Services from "../../services";
 import { AdminRoutes as adminRoutes } from '../../common/enums/adminRoutes';
+import { DeviceRoutes as deviceRoutes } from '../../common/enums/deviceRoutes';
+import { CommonEnum as constants } from '../../common/enums/common';
 import timeSeries from "../../timeSeries";
+import {DB_QUEUE} from "../configs";
 
 class ConsumerService {
+
+    private dbQueue: string;
+    private services;
 
     constructor(private channel: any, private readonly queue: string) {
         this.queue = queue
         this.channel = channel
+        this.dbQueue = DB_QUEUE;
+        this.services = Services;
     }
 
-    private async connectToDb(content: any) {
-        const request = JSON.parse(content.toString());
+    private async connectToDb(request: any) {
+        const { adminServices, deviceServices } = this.services;
         let response;
-
-        console.log(request)
 
         switch (request.route) {
             case adminRoutes.GET_ALL:
@@ -31,10 +37,8 @@ class ConsumerService {
             case adminRoutes.REMOVE:
                 response = await adminServices.remove(request.data);
                 break;
-            case 'timeseries':
-                console.log('tm')
-                console.log(request.data)
-                await timeSeries(request.data);
+            case deviceRoutes.UPDATE_MANY:
+                response = await deviceServices.updateMany(request.data);
                 break;
             default:
                 response = { error: 'Unknown method' };
@@ -57,13 +61,15 @@ class ConsumerService {
                     }
 
                     const { content } = msg;
+                    const request = JSON.parse(content.toString());
 
-                    console.log('cccc')
-                    console.log(content)
+                    if (request.route === constants.TIME_SERIES) {
+                        return await timeSeries(request.data)
+                    }
 
                     this.channel.sendToQueue(
                         msg.properties.replyTo,
-                        Buffer.from(JSON.stringify(await this.connectToDb(content))),
+                        Buffer.from(JSON.stringify(await this.connectToDb(request))),
                         { correlationId: msg.properties.correlationId }
                     );
 
