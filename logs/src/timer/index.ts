@@ -1,4 +1,5 @@
-import {TIMER as timer} from "./constants";
+import {TIMER as timer} from "../common/enums/timer";
+import {Queues as queues} from '../common/enums/queues'
 import connectRabbitMQ from "../messageBroker";
 
 class Logger {
@@ -13,9 +14,10 @@ class Logger {
     startLogging() {
         this.intervals = this.devices.map(device => {
             return setInterval(async () => {
-                await connectRabbitMQ.produce('timeseries', {
+                await connectRabbitMQ.produce(queues.TIME_SERIES, {
                     deviceId: device.id,
-                    deviceName: device.name
+                    deviceName: device.name,
+                    lastPingTime: new Date().toLocaleString(),
                 });
             }, timer.EVERY_FIFTEEN_SECONDS);
         });

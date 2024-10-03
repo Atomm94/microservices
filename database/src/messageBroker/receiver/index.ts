@@ -1,8 +1,6 @@
 import Services from "../../services";
 import { AdminRoutes as adminRoutes } from '../../common/enums/adminRoutes';
 import { DeviceRoutes as deviceRoutes } from '../../common/enums/deviceRoutes';
-import { CommonEnum as constants } from '../../common/enums/common';
-import timeSeries from "../../timeSeries";
 import {DB_QUEUE} from "../configs";
 
 class ConsumerService {
@@ -37,6 +35,12 @@ class ConsumerService {
             case adminRoutes.REMOVE:
                 response = await adminServices.remove(request.data);
                 break;
+            case deviceRoutes.CREATE:
+                response = await deviceServices.create(request.data);
+                break;
+            case deviceRoutes.INSERT_MANY:
+                response = await deviceServices.insertMany(request.data);
+                break;
             case deviceRoutes.UPDATE_MANY:
                 response = await deviceServices.updateMany(request.data);
                 break;
@@ -62,10 +66,6 @@ class ConsumerService {
 
                     const { content } = msg;
                     const request = JSON.parse(content.toString());
-
-                    if (request.route === constants.TIME_SERIES) {
-                        return await timeSeries(request.data)
-                    }
 
                     this.channel.sendToQueue(
                         msg.properties.replyTo,

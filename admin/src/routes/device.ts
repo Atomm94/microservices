@@ -5,17 +5,44 @@ import rabbitRoutes from "../common/enums";
 const device = Router();
 const { deviceRoutes } = rabbitRoutes;
 
-device.put('/', async (req: Request, res: Response) => {
-    const data: any = ['66fd4b8c3af75991986f2d5b', '66fd4b8c3af75991986f2d5c', '66fd4b8c3af75991986f2d6e'];
+// device.put('/', async (req: Request, res: Response) => {
+//     const data: any = ['66fd4b8c3af75991986f2d5b', '66fd4b8c3af75991986f2d5c', '66fd4b8c3af75991986f2d6e'];
+//
+//     // for (let i = 0; i < 100000; i++) {
+//     //     data.push({name: `device${Math.random() * 6}`, lastPingTime: new Date().toISOString()});
+//     // }
+//
+//     const results: any = await rabbitService.produce(deviceRoutes.UPDATE_MANY, data);
+//
+//     return res.status(results.status).send(results);
+// })
 
-    // for (let i = 0; i < 100000; i++) {
-    //     data.push({name: `device${Math.random() * 6}`, lastPingTime: new Date().toISOString()});
-    // }
+// device.get('/', async (req: Request, res: Response) => {
+//     const { body } = req;
+//
+//     const results: any = await rabbitService.produce(deviceRoutes.CREATE, body);
+//
+//     return res.status(results.status).send(results);
+// })
 
-    const results: any = await rabbitService.produce(deviceRoutes.UPDATE_MANY, data);
+device.post('/bulk', async (req: Request, res: Response) => {
+    const data: any = [];
+
+    for (let i = 0; i < 100000; i++) {
+        data.push({name: `device${Math.random() * 6}`, lastPingTime: new Date().toLocaleString()});
+    }
+
+    const results: any = await rabbitService.produce(deviceRoutes.INSERT_MANY, data);
 
     return res.status(results.status).send(results);
 })
 
+device.post('/', async (req: Request, res: Response) => {
+    const { body } = req;
+
+    const results: any = await rabbitService.produce(deviceRoutes.CREATE, body);
+
+    return res.status(results.status).send(results);
+})
 
 export { device };
