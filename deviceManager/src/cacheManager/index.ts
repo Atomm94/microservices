@@ -7,6 +7,17 @@ class CacheManager {
         this.redis = new Redis();
     }
 
+    async get() {
+        const keys = await this.redis.keys('*');
+
+        if (keys.length === 0) {
+            console.log('No keys found.');
+            return 0;
+        }
+
+        return keys;
+    }
+
     async insertMany(data: any[]) {
         const pipeline = this.redis.pipeline();
         try {
@@ -24,4 +35,8 @@ class CacheManager {
             await this.redis.quit();
         }
     }
+}
+
+export default () => {
+    return new CacheManager();
 }

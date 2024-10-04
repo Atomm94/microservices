@@ -1,7 +1,7 @@
 import client, { Connection, Channel } from "amqplib";
 import { randomUUID } from "crypto";
 
-import {rmqhost, RBMQ_ADMIN_QUEUE, RBMQ_DB_QUEUE} from "./configs";
+import {rmqhost, ADMIN_QUEUE} from "./configs";
 import {consume} from "./receiver";
 import {sendToQueue} from "./sender";
 
@@ -10,7 +10,7 @@ class RabbitMQConnection {
     channel!: Channel;
     private connected!: Boolean;
     responseMap = new Map();
-    generatedQueue = RBMQ_ADMIN_QUEUE+randomUUID();
+    generatedQueue = ADMIN_QUEUE+randomUUID();
 
     async connect() {
         if (this.connected && this.channel) return;
@@ -26,7 +26,7 @@ class RabbitMQConnection {
 
             this.channel = await this.connection.createChannel();
 
-            await consume(this.channel, this.responseMap, RBMQ_ADMIN_QUEUE);
+            await consume(this.channel, this.responseMap, ADMIN_QUEUE);
             await consume(this.channel, this.responseMap, this.generatedQueue);
             console.log('Created RabbitMQ Channel successfully');
         } catch (error) {
@@ -35,12 +35,12 @@ class RabbitMQConnection {
         }
     }
 
-    async produce(route, data = {}) {
+    async produce(queue, route, data = {}) {
         try {
             const args = {
                 channel: this.channel,
                 responseMap: this.responseMap,
-                sendTo: RBMQ_DB_QUEUE,
+                sendTo: queue,
                 replyTo: this.generatedQueue,
                 route,
                 data

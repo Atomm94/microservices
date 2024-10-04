@@ -2,7 +2,7 @@ import client, { Connection, Channel } from "amqplib";
 import { randomUUID } from "crypto";
 
 import {rmqhost, RBMQ_MANAGER_QUEUE, RBMQ_DB_QUEUE} from "./configs";
-import {consume} from "./receiver";
+import consumerService from "./receiver";
 import {sendToQueue} from "./sender";
 
 class RabbitMQConnection {
@@ -26,7 +26,7 @@ class RabbitMQConnection {
 
             this.channel = await this.connection.createChannel();
 
-            await consume(this.channel, this.responseMap, RBMQ_MANAGER_QUEUE);
+            await consumerService(this.channel, this.responseMap, RBMQ_MANAGER_QUEUE).consume();
             console.log('Created RabbitMQ Channel successfully');
         } catch (error) {
             console.error(error);
@@ -40,6 +40,7 @@ class RabbitMQConnection {
                 channel: this.channel,
                 responseMap: this.responseMap,
                 sendTo: RBMQ_DB_QUEUE,
+                replyTo: this.generatedQueue,
                 route,
                 data
             };

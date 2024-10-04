@@ -7,9 +7,9 @@ import {sendToQueue} from "./sender";
 class RabbitMQConnection {
     connection!: Connection;
     channel!: Channel;
-    private connected!: Boolean;
-    responseMap = new Map();
-    generatedQueue = DB_QUEUE+randomUUID();
+    connected!: Boolean;
+    private responseMap = new Map();
+    private generatedQueue = DB_QUEUE+randomUUID();
 
     async connect() {
         if (this.connected && this.channel) return;
@@ -38,10 +38,10 @@ class RabbitMQConnection {
     }
 
 
-    async produce(route, data = {}) {
+    async produce(queue, route, data = {}) {
         const args = {
             channel: this.channel,
-            sendTo: ADMIN_QUEUE,
+            sendTo: queue,
             replyTo: this.generatedQueue,
             responseMap: this.responseMap,
             route,
