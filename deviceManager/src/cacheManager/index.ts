@@ -7,32 +7,29 @@ class CacheManager {
         this.redis = new Redis();
     }
 
-    async get() {
-        const keys = await this.redis.keys('*');
-
-        if (keys.length === 0) {
-            console.log('No keys found.');
-            return 0;
-        }
-
-        return keys;
-    }
-
-    async insertMany(data: any[]) {
+    async insertMany(dbResponse: any) {
         const pipeline = this.redis.pipeline();
         try {
-            data.map(el => {
-
-                pipeline.set(el.id, `value$`);
+            dbResponse.data.map(el => {
+                pipeline.set(el._id, JSON.stringify({ name: el.name, status: el.status, lastPingTime: el.lastPingTime }));
             })
 
-            const results = await pipeline.exec();
+            await pipeline.exec();
 
             console.log('All keys have been set.');
         } catch (err) {
             console.error('Error executing pipeline:', err);
         } finally {
             await this.redis.quit();
+        }
+    }
+
+    async create(dbResponse: any) {
+        try {
+            const { data } = dbResponse;
+            return await this.redis.set(data._id, JSON.stringify({ name: data.name, status: data.status, lastPingTime: data.lastPingTime }));
+        } catch (err) {
+            console.error('Error executing set method:', err);
         }
     }
 }

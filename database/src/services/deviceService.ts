@@ -20,7 +20,11 @@ export class DeviceService {
     }
 
     get = async () => {
-        return responseHandler(await Device.find())
+        return responseHandler(await Device.find({}, 'name status lastPingTime'))
+    }
+
+    getOne = async (id: string) => {
+        return responseHandler(await Device.findOne({ id }, 'name status lastPingTime'))
     }
 }
 

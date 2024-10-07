@@ -3,12 +3,15 @@ import { AdminRoutes as adminRoutes } from '../../common/enums/adminRoutes';
 import { DeviceRoutes as deviceRoutes } from '../../common/enums/deviceRoutes';
 import {DB_QUEUE, MANAGER_QUEUE} from "../configs";
 import connectRabbitMQ from "../index";
+import {responseHandler} from "../../common/helpers/responseHandler";
+import cacheManager from "../../cacheManager";
 
 class ConsumerService {
 
     private dbQueue: string;
     private services;
     private managerQueue;
+    private cacheManager;
 
     constructor(private channel: any, private readonly queue: string) {
         this.queue = queue
@@ -16,50 +19,62 @@ class ConsumerService {
         this.dbQueue = DB_QUEUE;
         this.managerQueue = MANAGER_QUEUE;
         this.services = Services;
+        this.cacheManager = cacheManager();
     }
 
     private async connectToDb(request: any) {
         const { adminServices, deviceServices } = this.services;
-        let response: object = { status: 200, msg: 'ok' };
+        let response: any = { status: 200, msg: 'ok' };
 
         switch (request.route) {
-            case adminRoutes.GET_ALL:
+            case adminRoutes.GET_ALL_ADMINS:
                 response = await adminServices.getAll();
                 break;
-            case adminRoutes.GET_ONE:
+            case adminRoutes.GET_ONE_ADMIN:
                 response = await adminServices.getOne(request.data);
                 break;
-            case adminRoutes.CREATE:
+            case adminRoutes.CREATE_ADMIN:
                 response = await adminServices.create(request.data);
                 break;
-            case adminRoutes.UPDATE:
+            case adminRoutes.UPDATE_ADMIN:
                 response = await adminServices.update(request.data);
                 break;
-            case adminRoutes.REMOVE:
+            case adminRoutes.REMOVE_ADMIN:
                 response = await adminServices.remove(request.data);
                 break;
-            case deviceRoutes.CREATE:
-                response = await deviceServices.create(request.data);
-                connectRabbitMQ.produce(this.managerQueue, deviceRoutes.CREATE, request);
+            case deviceRoutes.CREATE_DEVICE:
+                connectRabbitMQ.produce(
+                    this.managerQueue,
+                    deviceRoutes.CREATE_DEVICE,
+                    await deviceServices.create(request.data)
+                );
                 break;
-            case deviceRoutes.INSERT_MANY:
-                console.log('request data db.............')
-                console.log(request)
-                await deviceServices.insertMany(request.data);
-                connectRabbitMQ.produce(this.managerQueue, deviceRoutes.INSERT_MANY, request);
+            case deviceRoutes.INSERT_MANY_DEVICES:
+                connectRabbitMQ.produce(
+                    this.managerQueue,
+                    deviceRoutes.INSERT_MANY_DEVICES,
+                    await deviceServices.insertMany(request.data)
+                );
                 break;
-            case deviceRoutes.UPDATE_MANY:
+            case deviceRoutes.UPDATE_MANY_DEVICES:
                 response = await deviceServices.updateMany(request.data);
                 break;
-            case deviceRoutes.GET_ALL:
+            case deviceRoutes.GET_ALL_DEVICES:
                 response = await deviceServices.get();
+
+                break;
+            case deviceRoutes.GET_ONE_DEVICE:
+                response = responseHandler(await this.cacheManager.getOne(request.data));
+
+                if (!response) {
+                    response = await deviceServices.getOne(request.data);
+                    break;
+                }
+
                 break;
             default:
                 response = { error: 'Unknown method' };
         }
-
-        console.log('resp')
-        console.log(response)
 
         return response;
     }

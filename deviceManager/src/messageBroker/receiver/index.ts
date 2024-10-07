@@ -1,35 +1,32 @@
 import { CommonEnum as constants } from "../../common/enums/common";
 import timeSeries from "../../timeSeries";
 import {DatabaseRoutes as dbRoutes} from "../../common/enums/databaseRoutes";
+import cacheManager from "../../cacheManager";
 
 class ConsumerService {
     private channel;
     private responseMap;
     private replyQueue;
+    private readonly cacheManager;
 
     constructor(channel, responseMap, replyQueue) {
         this.channel = channel;
         this.responseMap = responseMap;
         this.replyQueue = replyQueue;
+        this.cacheManager = cacheManager();
     }
 
     private async routes(request: any) {
-        let response;
-
-        // console.log('req')
-        // console.log(request)
+        let response: object = { status: 200, msg: 'ok' };
 
         switch (request.route) {
-            case dbRoutes.CREATE:
-                //response = await deviceServices.get();
-                console.log(request.data);
+            case dbRoutes.CREATE_DEVICE:
+                await this.cacheManager.create(request.data);
                 break;
-            case dbRoutes.INSERT_MANY:
-                //response = await deviceServices.get();
-                console.log(request.data);
+            case dbRoutes.INSERT_MANY_DEVICES:
+                await this.cacheManager.insertMany(request.data);
                 break;
             case constants.TIME_SERIES:
-                //response = await deviceServices.get();
                 console.log(response);
                 await timeSeries(request.data)
                 break;
@@ -50,33 +47,17 @@ class ConsumerService {
 
                 if (this.responseMap.has(correlationId)) {
                     const { resolve } = this.responseMap.get(correlationId);
-                    resolve(parsedMessage);
+                    resolve(parsedMessage.data);
                     this.responseMap.delete(correlationId);
                 }
 
                 this.channel.ack(msg);
-
-                console.log(msg.properties.replyTo)
-
-                console.log('parssssssssss')
-                console.log(parsedMessage)
-
-                const obj = {a: 1, b:[2, 4]}
 
                 this.channel.sendToQueue(
                     msg.properties.replyTo,
                     Buffer.from(JSON.stringify(await this.routes(parsedMessage))),
                     { correlationId: msg.properties.correlationId }
                 );
-
-                // if (route === constants.TIME_SERIES) {
-                //     return await timeSeries(data)
-                //
-                //     //
-                //     // channel.sendToQueue(dbQueue,
-                //     //     Buffer.from(JSON.stringify(parsedMessage)),
-                //     //     { correlationId: correlationId });
-                // }
             }
         }, { noAck: false });
     }

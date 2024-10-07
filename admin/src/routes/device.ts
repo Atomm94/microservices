@@ -18,32 +18,38 @@ const { deviceRoutes } = rabbitRoutes;
 //     return res.status(results.status).send(results);
 // })
 
-// device.get('/', async (req: Request, res: Response) => {
-//     const { body } = req;
-//
-//     const results: any = await rabbitService.produce(deviceRoutes.CREATE, body);
-//
-//     return res.status(results.status).send(results);
-// })
-
-device.post('/bulk', async (req: Request, res: Response) => {
-    const data: any = [];
-
-    for (let i = 0; i < 10; i++) {
-        data.push({name: `device${Math.random() * 6}`, lastPingTime: new Date().toLocaleString()});
-    }
-
-    const results: any = await rabbitService.produce(DB_QUEUE, deviceRoutes.INSERT_MANY, data);
+device.get('/', async (req: Request, res: Response) => {
+    const results: any = await rabbitService.produce(DB_QUEUE, deviceRoutes.GET_ALL_DEVICES);
 
     return res.status(results.status).send(results);
 })
 
-// device.post('/', async (req: Request, res: Response) => {
-//     const { body } = req;
-//
-//     const results: any = await rabbitService.produce(MANAGER_QUEUE, deviceRoutes.CREATE, body);
-//
-//     return res.status(results.status).send(results);
-// })
+device.get('/:id', async (req: Request, res: Response) => {
+    const { params: { id } } = req;
+
+    const results: any = await rabbitService.produce(DB_QUEUE, deviceRoutes.GET_ONE_DEVICE, id);
+
+    return res.status(results.status).send(results);
+})
+
+device.post('/bulk', async (req: Request, res: Response) => {
+    const data: any = [];
+
+    for (let i = 0; i < 100000; i++) {
+        data.push({name: `device${Math.floor(Math.random() * 80000000)}`});
+    }
+
+    const results: any = await rabbitService.produce(DB_QUEUE, deviceRoutes.INSERT_MANY_DEVICES, data);
+
+    return res.status(results.status).send(results);
+})
+
+device.post('/', async (req: Request, res: Response) => {
+    const { body } = req;
+
+    const results: any = await rabbitService.produce(MANAGER_QUEUE, deviceRoutes.CREATE_DEVICE, body);
+
+    return res.status(results.status).send(results);
+})
 
 export { device };
