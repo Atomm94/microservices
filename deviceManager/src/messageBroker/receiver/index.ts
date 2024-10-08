@@ -27,8 +27,8 @@ class ConsumerService {
                 await this.cacheManager.insertMany(request.data);
                 break;
             case constants.TIME_SERIES:
-                console.log(response);
-                await timeSeries(request.data)
+                await this.cacheManager.checked(request.data);
+                await timeSeries(request.data);
                 break;
             default:
                 response = { error: 'Unknown method' };

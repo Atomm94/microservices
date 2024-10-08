@@ -9,8 +9,8 @@ class TimeSeries {
 
     constructor(data: any) {
         this.sender = Sender.fromConfig("http::addr=localhost:9000");
-        this.deviceId = data.deviceId;
-        this.deviceName = data.deviceName;
+        this.deviceId = data._id;
+        this.deviceName = data.name;
         this.status = data?.status || 'active';
         this.lastPingTime = data.lastPingTime;
     }
@@ -20,7 +20,7 @@ class TimeSeries {
             await this.sender
                 .table("devices")
                 .symbol("deviceId", this.deviceId)
-                .stringColumn("deviceName", this.deviceName)
+                .stringColumn("name", this.deviceName)
                 .stringColumn("status", this.status)
                 .stringColumn("lastPingTime", this.lastPingTime)
                 .at(Date.now(), "ms")

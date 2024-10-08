@@ -35,7 +35,7 @@ device.get('/:id', async (req: Request, res: Response) => {
 device.post('/bulk', async (req: Request, res: Response) => {
     const data: any = [];
 
-    for (let i = 0; i < 100000; i++) {
+    for (let i = 0; i < 1000; i++) {
         data.push({name: `device${Math.floor(Math.random() * 80000000)}`});
     }
 

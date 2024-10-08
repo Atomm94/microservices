@@ -1,22 +1,32 @@
 import {TIMER as timer} from "../common/enums/timer";
 import {Queues as queues} from '../common/enums/queues'
 import connectRabbitMQ from "../messageBroker";
+import cacheManager from '../casheManager';
 
 class Logger {
     private intervals: any;
     private devices: any[];
+    private cacheManager;
 
-    constructor(devices) {
-        this.devices = devices;
+    constructor() {
+        this.cacheManager = cacheManager()
         this.intervals = [];
     }
 
-    startLogging() {
+    async startLogging() {
+        this.devices = await this.cacheManager.getAll();
+
+        if (this.devices.length === 0) {
+            console.log('no devices found');
+            return;
+        }
+
         this.intervals = this.devices.map(device => {
             return setInterval(async () => {
                 await connectRabbitMQ.produce(queues.TIME_SERIES, {
-                    deviceId: device.id,
-                    deviceName: device.name,
+                    _id: device._id,
+                    name: device.name,
+                    status: device.status,
                     lastPingTime: new Date().toLocaleString(),
                 });
             }, timer.EVERY_FIFTEEN_SECONDS);
@@ -36,8 +46,8 @@ class Logger {
     }
 }
 
-export const logger = (devices) => {
-    return new Logger(devices);
+export const logger = () => {
+    return new Logger();
 }
 
 
