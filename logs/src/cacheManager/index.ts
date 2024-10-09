@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import jsonParse from "../common/helpers/jsonParse";
 
 class CacheManager {
     private redis;
@@ -11,7 +12,9 @@ class CacheManager {
         const keys = await this.redis.keys('*')
 
         return await Promise.all(keys.map(async key => {
-            return { _id: key, ...JSON.parse(await this.redis.get(key)) }
+            const values: any = jsonParse(await this.redis.get(key))
+
+            return {_id: key, ...values };
         }));
     }
 }

@@ -57,11 +57,10 @@ class ConsumerService {
                 );
                 break;
             case deviceRoutes.UPDATE_MANY_DEVICES:
-                response = await deviceServices.updateMany(request.data);
+                await deviceServices.updateMany(request.data);
                 break;
             case deviceRoutes.GET_ALL_DEVICES:
                 response = await deviceServices.get();
-
                 break;
             case deviceRoutes.GET_ONE_DEVICE:
                 response = responseHandler(await this.cacheManager.getOne(request.data));

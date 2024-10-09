@@ -40,6 +40,7 @@ class RabbitMQConnection {
             const args = {
                 channel: this.channel,
                 responseMap: this.responseMap,
+                replyTo: this.generatedQueue,
                 sendTo: RBMQ_MANAGER_QUEUE,
                 route,
                 data

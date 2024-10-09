@@ -1,7 +1,7 @@
 import {TIMER as timer} from "../common/enums/timer";
 import {Queues as queues} from '../common/enums/queues'
 import connectRabbitMQ from "../messageBroker";
-import cacheManager from '../casheManager';
+import cacheManager from '../cacheManager';
 
 class Logger {
     private intervals: any;

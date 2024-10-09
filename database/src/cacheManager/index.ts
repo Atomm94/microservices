@@ -1,4 +1,5 @@
 import Redis from 'ioredis';
+import jsonParse from "../common/helpers/jsonParse";
 
 class CacheManager {
     private redis;
@@ -8,7 +9,9 @@ class CacheManager {
     }
 
     async getOne(key: string) {
-        return {_id: key, ...JSON.parse(await this.redis.get(key))};
+        const value: any = jsonParse(await this.redis.get(key))
+
+        return {_id: key, ...value};
     }
 }
 

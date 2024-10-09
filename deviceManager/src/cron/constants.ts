@@ -1,3 +1,3 @@
 export enum TIME {
-    EVERY_THIRTY_SECONDS = '*/30 * * * * *',
+    EVERY_THIRTYFIVE_SECONDS = '*/35 * * * * *',
 }

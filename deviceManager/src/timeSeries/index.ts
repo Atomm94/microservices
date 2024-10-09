@@ -28,6 +28,8 @@ class TimeSeries {
             await this.sender.flush()
 
             await this.sender.close()
+
+            return;
         } catch (error) {
             console.log(error)
         }

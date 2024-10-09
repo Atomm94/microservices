@@ -11,12 +11,11 @@ export class DeviceService {
     }
 
     updateMany = async (data: any) => {
-        const { id, status } = data;
+        const updatedData = data.map(el => {
+            return Device.updateOne({_id: el._id}, {$set: {status: el.status, lastPingTime: el.lastPingTime}})
+        })
 
-        return responseHandler(await Device.updateMany(
-            { _id: { $in: id } },
-            { $set: { status } }
-        ))
+        return await Promise.all(updatedData);
     }
 
     get = async () => {

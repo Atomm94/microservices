@@ -2,43 +2,36 @@ import cron from 'node-cron';
 import cacheManager from '../cacheManager';
 import { TIME } from "./constants";
 import {DeviceStatus as deviceStatus} from "../common/enums/deviceStatus";
+import { DatabaseRoutes as routes } from '../common/enums/databaseRoutes';
+import messageBroker from "../messageBroker";
 
 class CronJob {
     private task: cron.ScheduledTask;
-    private cacheManager;
 
     constructor(cronTime: string) {
         this.task = cron.schedule(cronTime, this.executeTask.bind(this));
-        this.cacheManager = cacheManager();
     }
 
     private async executeTask() {
         console.log('Running scheduled task at:', new Date().toISOString());
-        const devices = await this.cacheManager.getAll();
-        console.log('d')
-        console.log(devices)
+        const devices: any[] = await cacheManager().getAll();
+
         if (!devices.length) {
             console.log('no devices')
             return;
         }
-        // const inactiveDevices = devices.filter(device => device.checked);
-        //
-        // if (!inactiveDevices.length) return;
-        // console.log('dd')
-        // const updatedData = devices.map(device => {
-        //     if (device.checked) {
-        //         console.log('a')
-        //         device.status === deviceStatus.INACTIVE
-        //     }
-        //     console.log('v')
-        //     device.checked = 0;
-        // })
-        //
-        // console.log(updatedData)
 
-        //const updatedStatuses = inactiveDevices.map(device => device.status === deviceStatus.INACTIVE)
+        const updateData = devices.map(device => {
+            if (!device.checked) {
+                device.status = deviceStatus.INACTIVE;
+            }
 
-        //await this.cacheManager.insertMany(updatedStatuses);
+            return device;
+        })
+
+        await cacheManager().insertMany({ data: updateData });
+
+        return await messageBroker.produce(routes.UPDATE_MANY_DEVICES, updateData);
     }
 
     public start() {
@@ -52,5 +45,5 @@ class CronJob {
     }
 }
 
-export const cronjob = new CronJob(TIME.EVERY_THIRTY_SECONDS);
+export const cronjob = new CronJob(TIME.EVERY_THIRTYFIVE_SECONDS);
 

@@ -1,4 +1,4 @@
-import cacheManager from '../../casheManager';
+import cacheManager from '../../cacheManager';
 
 class LoggerList {
     private cacheManager;
