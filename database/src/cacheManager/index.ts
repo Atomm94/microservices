@@ -11,7 +11,9 @@ class CacheManager {
     async getOne(key: string) {
         const value: any = jsonParse(await this.redis.get(key))
 
-        return {_id: key, ...value};
+        const { checked, ...respValue } = value
+
+        return {_id: key, ...respValue};
     }
 }
 
